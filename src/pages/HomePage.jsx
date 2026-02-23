@@ -52,7 +52,36 @@ function HomePage({ users, loading, error, setUsers }) {
         if (Object.keys(errors).length > 0) {
             return;
         }
-        // Simulate adding user to server by generating a new ID
+        const newUser = {
+            id: `local-${Date.now()}`,
+            name: formValues.name.trim(),
+            email: formValues.email.trim(),
+            phone: formValues.phone.trim(),
+            website: formValues.website.trim(),
+            company: {
+                name: formValues.company.trim()|| "Local Company"
+            },
+            address:{
+                street: formValues.street.trim(),
+                suite: formValues.suite.trim(),
+                city: formValues.city.trim(),
+                zipcode: formValues.zipcode.trim()
+            },
+            isLocal: true,
+        };
+        setUsers(prev => [newUser, ...prev]);
+        setFormValues({
+            name: "",
+            email: "",
+            company: "",
+            phone: "",
+            website: "",
+            street: "",
+            suite: "",
+            city: "",
+            zipcode: ""
+        });
+        setFormErrors({});
     }
 
     return (
