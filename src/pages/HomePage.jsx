@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchUsers } from "../api/usersApi";
 
 function HomePage() {
@@ -33,12 +34,23 @@ function HomePage() {
             {error && <p style={{color: "red"}}>Error: {error}</p>}
 
             {!loading && !error && (
-                <ul>
+                <div style={{ display: "grid", gap: "0.75rem"}} >
                     {users.map((user) => (
-                        <li key={user.id}>
-                            <strong>{user.name}</strong> - {user.email} - {user.phone} - {user.company?.name}
-                       </li>))}
-                   </ul>
+                        <Link 
+                            key={user.id} 
+                            to={`/users/${user.id}`} 
+                            style={{ 
+                                padding: "0.75rem", 
+                                border: "1px solid #ddd", 
+                                borderRadius: "8px", 
+                                textDecoration: "none", 
+                                color: "inherit" }}>
+                            <div><strong>{user.name}</strong></div>
+                            <div>{user.email}</div>
+                            <div>{user.company?.name}</div>
+                        </Link>
+                    ))}
+                </div>
             )}
         </main>
     );
