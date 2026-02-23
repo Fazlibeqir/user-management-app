@@ -15,7 +15,7 @@ function HomePage({ users, loading, error, setUsers }) {
         zipcode: ""
     });
     const [formErrors, setFormErrors] = useState({});
-    
+
     const filteredUsers = useMemo(() => {
         const query = searchTerm.trim().toLowerCase();
         if (!query) return users;
@@ -59,9 +59,9 @@ function HomePage({ users, loading, error, setUsers }) {
             phone: formValues.phone.trim(),
             website: formValues.website.trim(),
             company: {
-                name: formValues.company.trim()|| "Local Company"
+                name: formValues.company.trim() || "Local Company"
             },
-            address:{
+            address: {
                 street: formValues.street.trim(),
                 suite: formValues.suite.trim(),
                 city: formValues.city.trim(),
@@ -83,6 +83,7 @@ function HomePage({ users, loading, error, setUsers }) {
         });
         setFormErrors({});
     }
+    const isAddDisabled = !formValues.name.trim() || !formValues.email.trim();
 
     return (
         <main style={{ padding: "1rem", fontFamily: "system-ui, sans-serif" }}>
@@ -100,7 +101,7 @@ function HomePage({ users, loading, error, setUsers }) {
                 <form onSubmit={handleAddUser} noValidate>
                     <div style={{ display: "grid", gap: "0.75rem", maxWidth: "700px" }}>
                         <label htmlFor="name" style={{ display: "block", marginBottom: "0.25rem" }}>
-                            Name* 
+                            Name*
                         </label>
                         <input
                             id="name"
@@ -121,7 +122,7 @@ function HomePage({ users, loading, error, setUsers }) {
                     </div>
                     <div>
                         <label htmlFor="email" style={{ display: "block", marginBottom: "0.25rem" }}>
-                            Email* 
+                            Email*
                         </label>
                         <input
                             id="email"
@@ -142,7 +143,7 @@ function HomePage({ users, loading, error, setUsers }) {
                     </div>
                     <div>
                         <label htmlFor="company" style={{ display: "block", marginBottom: "0.25rem" }}>
-                            Company 
+                            Company
                         </label>
                         <input
                             id="company"
@@ -194,21 +195,23 @@ function HomePage({ users, loading, error, setUsers }) {
                             }}
                         />
                     </div>
-                    <button 
-                        type="submit" 
-                        style={{ 
-                            marginTop: "1rem", 
-                            padding: "0.65rem 1rem", 
-                            border: "1px solid #222", 
-                            borderRadius: "8px", 
-                            background: "#222", 
-                            color: "#fff", 
-                            cursor: "pointer" }}>
+                    <button
+                        type="submit"
+                        disabled={isAddDisabled}
+                        style={{
+                            marginTop: "1rem",
+                            padding: "0.65rem 1rem",
+                            border: "1px solid #222",
+                            borderRadius: "8px",
+                            background: "#222",
+                            color: "#fff",
+                            cursor: "pointer"
+                        }}>
                         Add User
                     </button>
                 </form>
             </section>
-
+            
             {/* Search Input */}
             <div style={{ margin: "1rem 0" }}>
                 <label htmlFor="search" style={{ display: "block", marginBottom: "0.4rem" }}>
@@ -229,6 +232,11 @@ function HomePage({ users, loading, error, setUsers }) {
                     }}
                 />
             </div>
+            {!loading && !error && (
+                <p style={{ marginBottom: "0.75rem" }}>
+                    Showing {filteredUsers.length} user{filteredUsers.length !== 1 ? "s" : ""}
+                </p>
+            )}
 
             {/* Users List */}
             {loading && <p>Loading users...</p>}
