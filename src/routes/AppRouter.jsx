@@ -1,4 +1,4 @@
-import {BrowserRouter as  Routes, Route, BrowserRouter} from 'react-router-dom';
+import {BrowserRouter ,Routes ,Route} from 'react-router-dom';
 import HomePage from '../pages/HomePage';
 import UserDetailsPage from '../pages/UserDetailsPage';
 
@@ -14,3 +14,4 @@ function AppRouter() {
 }
 
 export default AppRouter;
+    
