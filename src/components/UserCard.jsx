@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-function UserCard({ user, onDelete }) {
+function UserCard({ user, onDelete, onEdit }) {
   return (
     <div className="col-12 col-md-6">
       <div className="card h-100 shadow-sm">
@@ -22,14 +22,25 @@ function UserCard({ user, onDelete }) {
               {user.isLocal && <span className="badge text-bg-primary">Local</span>}
             </div>
 
-            <button
-              type="button"
-              className="btn btn-outline-danger btn-sm"
-              onClick={() => onDelete(user)}
-              aria-label={`Delete ${user.name}`}
-            >
-              Delete
-            </button>
+            <div className="d-flex flex-column gap-2">
+              <button
+                type="button"
+                className="btn btn-outline-primary btn-sm"
+                onClick={() => onEdit(user)}
+                aria-label={`Edit ${user.name}`}
+              >
+                Edit
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-outline-danger btn-sm"
+                onClick={() => onDelete(user)}
+                aria-label={`Delete ${user.name}`}
+              >
+                Delete
+              </button>
+            </div>
           </div>
 
           <div className="mt-3">

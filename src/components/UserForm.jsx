@@ -6,6 +6,9 @@ function UserForm({
   onInputChange,
   onSubmit,
   submitLabel = "Add User",
+  title = "Add New User (Local only)",
+  isEditing = false,
+  onCancelEdit,
 }) {
   const isSubmitDisabled = useMemo(() => {
     return !formValues.name.trim() || !formValues.email.trim();
@@ -14,7 +17,10 @@ function UserForm({
   return (
     <section className="card shadow-sm mb-4">
       <div className="card-body">
-        <h2 className="h4 card-title mb-3">Add New User (Local only)</h2>
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <h2 className="h4 card-title mb-0">{title}</h2>
+          {isEditing && <span className="badge text-bg-warning">Editing</span>}
+        </div>
 
         <form onSubmit={onSubmit} noValidate>
           <div className="row g-3">
@@ -100,13 +106,25 @@ function UserForm({
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitDisabled}
-            className="btn btn-primary mt-3"
-          >
-            {submitLabel}
-          </button>
+          <div className="d-flex gap-2 mt-3">
+            <button
+              type="submit"
+              disabled={isSubmitDisabled}
+              className={`btn ${isEditing ? "btn-success" : "btn-primary"}`}
+            >
+              {submitLabel}
+            </button>
+
+            {isEditing && (
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={onCancelEdit}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </section>
