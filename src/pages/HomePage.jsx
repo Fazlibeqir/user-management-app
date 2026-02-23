@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 function HomePage({ users, loading, error, setUsers }) {
     const [searchTerm, setSearchTerm] = useState("");
+    const [sortBy, setSortBy] = useState("default");
     const [formValues, setFormValues] = useState({
         name: "",
         email: "",
@@ -15,16 +16,6 @@ function HomePage({ users, loading, error, setUsers }) {
         zipcode: ""
     });
     const [formErrors, setFormErrors] = useState({});
-
-    const filteredUsers = useMemo(() => {
-        const query = searchTerm.trim().toLowerCase();
-        if (!query) return users;
-        return users.filter(user => {
-            const nameMatch = user.name?.toLowerCase() || "";
-            const emailMatch = user.email?.toLowerCase() || "";
-            return nameMatch.includes(query) || emailMatch.includes(query);
-        });
-    }, [users, searchTerm]);
 
     function handleInputChange(e) {
         const { name, value } = e.target;
@@ -48,6 +39,7 @@ function HomePage({ users, loading, error, setUsers }) {
     function handleAddUser(e) {
         e.preventDefault();
         const errors = validateForm(formValues);
+        setFormErrors(errors);
 
         if (Object.keys(errors).length > 0) {
             return;
@@ -83,191 +75,220 @@ function HomePage({ users, loading, error, setUsers }) {
         });
         setFormErrors({});
     }
+    const filteredAndSortedUsers = useMemo(() => {
+        const query = searchTerm.trim().toLowerCase();
+
+        let result = users.filter((user) => {
+            const name = user.name?.toLowerCase() || "";
+            const email = user.email?.toLowerCase() || "";
+            return !query || name.includes(query) || email.includes(query);
+        });
+
+        const safe = (v) => (v || "").toString().toLowerCase();
+
+        if (sortBy === "name-asc") {
+            result = [...result].sort((a, b) => safe(a.name).localeCompare(safe(b.name)));
+        } else if (sortBy === "name-desc") {
+            result = [...result].sort((a, b) => safe(b.name).localeCompare(safe(a.name)));
+        } else if (sortBy === "email-asc") {
+            result = [...result].sort((a, b) => safe(a.email).localeCompare(safe(b.email)));
+        } else if (sortBy === "company-asc") {
+            result = [...result].sort((a, b) =>
+                safe(a.company?.name).localeCompare(safe(b.company?.name))
+            );
+        }
+
+        return result;
+    }, [users, searchTerm, sortBy]);
+
     const isAddDisabled = !formValues.name.trim() || !formValues.email.trim();
 
     return (
-        <main style={{ padding: "1rem", fontFamily: "system-ui, sans-serif" }}>
-            <h1>User Managment App</h1>
+        <main className="container py-4">
+            <div className="mx-auto" style={{ maxWidth: "900px"}}>
+            <h1 className="mb-4 fw-bold">User Management App</h1>
 
             {/* Add User Form */}
-            <section
-                style={{
-                    margin: "1rem 0 1.5rem",
-                    padding: "1rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "10px"
-                }}>
-                <h2 style={{ marginTop: "0" }}>Add New User(Local only)</h2>
-                <form onSubmit={handleAddUser} noValidate>
-                    <div style={{ display: "grid", gap: "0.75rem", maxWidth: "700px" }}>
-                        <label htmlFor="name" style={{ display: "block", marginBottom: "0.25rem" }}>
-                            Name*
-                        </label>
-                        <input
-                            id="name"
-                            name="name"
-                            type="text"
-                            value={formValues.name}
-                            onChange={handleInputChange}
-                            style={{
-                                width: "100%",
-                                padding: "0.6rem",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px"
-                            }}
-                        />
-                        {formErrors.name && (
-                            <p style={{ color: "red", margin: "0.25rem 0 0" }}>{formErrors.name}</p>
-                        )}
-                    </div>
-                    <div>
-                        <label htmlFor="email" style={{ display: "block", marginBottom: "0.25rem" }}>
-                            Email*
-                        </label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            value={formValues.email}
-                            onChange={handleInputChange}
-                            style={{
-                                width: "100%",
-                                padding: "0.6rem",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px"
-                            }}
-                        />
-                        {formErrors.email && (
-                            <p style={{ color: "red", margin: "0.25rem 0 0" }}>{formErrors.email}</p>
-                        )}
-                    </div>
-                    <div>
-                        <label htmlFor="company" style={{ display: "block", marginBottom: "0.25rem" }}>
-                            Company
-                        </label>
-                        <input
-                            id="company"
-                            name="company"
-                            type="text"
-                            value={formValues.company}
-                            onChange={handleInputChange}
-                            style={{
-                                width: "100%",
-                                padding: "0.6rem",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px"
-                            }}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="phone" style={{ display: "block", marginBottom: "0.25rem" }}>
-                            Phone
-                        </label>
-                        <input
-                            id="phone"
-                            name="phone"
-                            type="text"
-                            value={formValues.phone}
-                            onChange={handleInputChange}
-                            style={{
-                                width: "100%",
-                                padding: "0.6rem",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px"
-                            }}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="website" style={{ display: "block", marginBottom: "0.25rem" }}>
-                            Website
-                        </label>
-                        <input
-                            id="website"
-                            name="website"
-                            type="text"
-                            value={formValues.website}
-                            onChange={handleInputChange}
-                            style={{
-                                width: "100%",
-                                padding: "0.6rem",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px"
-                            }}
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={isAddDisabled}
-                        style={{
-                            marginTop: "1rem",
-                            padding: "0.65rem 1rem",
-                            border: "1px solid #222",
-                            borderRadius: "8px",
-                            background: "#222",
-                            color: "#fff",
-                            cursor: "pointer"
-                        }}>
-                        Add User
-                    </button>
-                </form>
-            </section>
-            
-            {/* Search Input */}
-            <div style={{ margin: "1rem 0" }}>
-                <label htmlFor="search" style={{ display: "block", marginBottom: "0.4rem" }}>
-                    Search by name or email:
+        <section className="card shadow-sm mb-4">
+          <div className="card-body">
+            <h2 className="h4 card-title mb-3">Add New User (Local only)</h2>
+
+            <form onSubmit={handleAddUser} noValidate>
+              <div className="row g-3">
+                <div className="col-12 col-md-6">
+                  <label htmlFor="name" className="form-label">
+                    Name <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={formValues.name}
+                    onChange={handleInputChange}
+                    className={`form-control ${formErrors.name ? "is-invalid" : ""}`}
+                    placeholder="Enter full name"
+                  />
+                  {formErrors.name && (
+                    <div className="invalid-feedback d-block">{formErrors.name}</div>
+                  )}
+                </div>
+
+                <div className="col-12 col-md-6">
+                  <label htmlFor="email" className="form-label">
+                    Email <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formValues.email}
+                    onChange={handleInputChange}
+                    className={`form-control ${formErrors.email ? "is-invalid" : ""}`}
+                    placeholder="Enter email address"
+                  />
+                  {formErrors.email && (
+                    <div className="invalid-feedback d-block">{formErrors.email}</div>
+                  )}
+                </div>
+
+                <div className="col-12 col-md-6">
+                  <label htmlFor="company" className="form-label">
+                    Company
+                  </label>
+                  <input
+                    id="company"
+                    name="company"
+                    type="text"
+                    value={formValues.company}
+                    onChange={handleInputChange}
+                    className="form-control"
+                    placeholder="Company name"
+                  />
+                </div>
+
+                <div className="col-12 col-md-3">
+                  <label htmlFor="phone" className="form-label">
+                    Phone
+                  </label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="text"
+                    value={formValues.phone}
+                    onChange={handleInputChange}
+                    className="form-control"
+                    placeholder="Phone number"
+                  />
+                </div>
+
+                <div className="col-12 col-md-3">
+                  <label htmlFor="website" className="form-label">
+                    Website
+                  </label>
+                  <input
+                    id="website"
+                    name="website"
+                    type="text"
+                    value={formValues.website}
+                    onChange={handleInputChange}
+                    className="form-control"
+                    placeholder="example.com"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isAddDisabled}
+                className="btn btn-primary mt-3"
+              >
+                Add User
+              </button>
+            </form>
+          </div>
+        </section>
+
+        {/* Search + Sort */}
+        <section className="card shadow-sm mb-4">
+          <div className="card-body">
+            <div className="row g-3">
+              <div className="col-12 col-md-7">
+                <label htmlFor="search" className="form-label">
+                  Search by name or email
                 </label>
                 <input
-                    id="search"
-                    type="text"
-                    placeholder="Type to search..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{
-                        width: "100%",
-                        maxWidth: "420px",
-                        padding: "0.6rem 0.75rem",
-                        border: "1px solid #ccc",
-                        borderRadius: "8px"
-                    }}
+                  id="search"
+                  type="text"
+                  className="form-control"
+                  placeholder="e.g. Leanne or .biz"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
+              </div>
+
+              <div className="col-12 col-md-5">
+                <label htmlFor="sortBy" className="form-label">
+                  Sort users
+                </label>
+                <select
+                  id="sortBy"
+                  className="form-select"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="default">Default order</option>
+                  <option value="name-asc">Name (A-Z)</option>
+                  <option value="name-desc">Name (Z-A)</option>
+                  <option value="email-asc">Email (A-Z)</option>
+                  <option value="company-asc">Company (A-Z)</option>
+                </select>
+              </div>
             </div>
-            {!loading && !error && (
-                <p style={{ marginBottom: "0.75rem" }}>
-                    Showing {filteredUsers.length} user{filteredUsers.length !== 1 ? "s" : ""}
-                </p>
-            )}
+          </div>
+        </section>
 
-            {/* Users List */}
-            {loading && <p>Loading users...</p>}
-            {error && <p style={{ color: "red" }}>Error: {error}</p>}
+        {/* Users List States */}
+        {loading && <p className="text-muted">Loading users...</p>}
 
-            {loading && !error && filteredUsers.length === 0 && (
-                <p>No users match your search</p>
-            )}
+        {error && <div className="alert alert-danger">Error: {error}</div>}
 
-            {!loading && !error && filteredUsers.length > 0 && (
-                <div style={{ display: "grid", gap: "0.75rem" }} >
-                    {filteredUsers.map((user) => (
-                        <Link
-                            key={user.id}
-                            to={`/users/${user.id}`}
-                            style={{
-                                padding: "0.75rem",
-                                border: "1px solid #ddd",
-                                borderRadius: "8px",
-                                textDecoration: "none",
-                                color: "inherit"
-                            }}>
-                            <div><strong>{user.name}</strong></div>
-                            <div>{user.email}</div>
-                            <div>{user.company?.name}</div>
-                        </Link>
-                    ))}
-                </div>
-            )}
-        </main>
-    );
+        {!loading && !error && (
+          <p className="text-muted mb-3">
+            Showing {filteredAndSortedUsers.length} user
+            {filteredAndSortedUsers.length !== 1 ? "s" : ""}
+          </p>
+        )}
+
+        {!loading && !error && filteredAndSortedUsers.length === 0 && (
+          <div className="alert alert-secondary">No users match your search.</div>
+        )}
+
+        {!loading && !error && filteredAndSortedUsers.length > 0 && (
+          <div className="row g-3">
+            {filteredAndSortedUsers.map((user) => (
+              <div key={user.id} className="col-12 col-md-6">
+                <Link
+                  to={`/users/${user.id}`}
+                  className="card h-100 text-decoration-none text-dark shadow-sm"
+                >
+                  <div className="card-body">
+                    <h3 className="h5 card-title mb-2">{user.name}</h3>
+                    <p className="card-text mb-1">{user.email}</p>
+                    <p className="card-text text-muted mb-0">
+                      {user.company?.name || "N/A"}
+                    </p>
+                    {user.isLocal && (
+                      <span className="badge text-bg-primary mt-2">Local</span>
+                    )}
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
 }
 
 export default HomePage;
