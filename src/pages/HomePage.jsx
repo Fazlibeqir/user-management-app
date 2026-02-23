@@ -1,32 +1,9 @@
-import { useEffect, useState, useMemo} from "react";
+import { useState, useMemo} from "react";
 import { Link } from "react-router-dom";
-import { fetchUsers } from "../api/usersApi";
 
-function HomePage() {
-    const [users, setUsers] = useState([]);
+function HomePage({users, loading, error}) {
     const [searchTerm, setSearchTerm] = useState("");
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
-    useEffect(()=> {
-        let isMounted = true;
-        async function loadUsers() {
-            try {
-                setLoading(true);
-                setError("");
-                const data = await fetchUsers();
-                if(isMounted) setUsers(data);
-            } catch (err) {
-                if(isMounted) setError(err.message || "Unknown error");
-            } finally {
-                if(isMounted) setLoading(false);
-            }
-        }
-        loadUsers();
-        return () => {
-            isMounted = false;
-        };
-    },[]);
     const filteredUsers = useMemo(()=>{
         const query = searchTerm.trim().toLowerCase();
         if (!query) return users;
