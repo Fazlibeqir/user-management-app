@@ -1,7 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import UserForm from "../components/UserForm.jsx";
 import SearchSortControls from "../components/SearchSortControls.jsx";
 import UserCard from "../components/UserCard.jsx";
+import {
+    addUser,
+    deleteUser,
+    fetchUsers,
+    updateUser,
+  } from "../store/usersSlice.js";
 
 const INITIAL_FORM_VALUES = {
   name: "",
@@ -15,12 +22,26 @@ const INITIAL_FORM_VALUES = {
   zipcode: "",
 };
 
-function HomePage({ users, loading, error, setUsers }) {
+function HomePage() {
+  const dispatch = useDispatch();
+  const users = useSelector((state) => state.users.items);
+  const loading = useSelector((state) => state.users.loading);
+  const error = useSelector((state) => state.users.error);
+
+
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("default");
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [formErrors, setFormErrors] = useState({});
   const [editingUserId, setEditingUserId] = useState(null);
+
+
+  useEffect(() => {
+    if (users.length === 0 && !loading && !error) {
+      dispatch(fetchUsers());
+    }
+  }, [dispatch, users.length, loading, error]);
+
 
   function handleInputChange(e) {
     const { name, value } = e.target;
@@ -64,34 +85,30 @@ function HomePage({ users, loading, error, setUsers }) {
     if (Object.keys(errors).length > 0) return;
 
     if (editingUserId) {
-      setUsers((prev) =>
-        prev.map((user) => {
-          if (String(user.id) !== String(editingUserId)) return user;
-
-          return {
-            ...user,
-            name: formValues.name.trim(),
-            email: formValues.email.trim(),
-            phone: formValues.phone.trim(),
-            website: formValues.website.trim(),
-            company: {
-              ...(user.company || {}),
-              name: formValues.company.trim() || "Local Company",
+        dispatch(
+          updateUser({
+            id: editingUserId,
+            updates: {
+              name: formValues.name.trim(),
+              email: formValues.email.trim(),
+              phone: formValues.phone.trim(),
+              website: formValues.website.trim(),
+              company: {
+                name: formValues.company.trim() || "Local Company",
+              },
+              address: {
+                street: formValues.street.trim(),
+                suite: formValues.suite.trim(),
+                city: formValues.city.trim(),
+                zipcode: formValues.zipcode.trim(),
+              },
             },
-            address: {
-              ...(user.address || {}),
-              street: formValues.street.trim(),
-              suite: formValues.suite.trim(),
-              city: formValues.city.trim(),
-              zipcode: formValues.zipcode.trim(),
-            },
-          };
-        })
-      );
-
-      resetForm();
-      return;
-    }
+          })
+        );
+  
+        resetForm();
+        return;
+      }
 
     const newUser = {
       id: `local-${Date.now()}`,
@@ -111,7 +128,7 @@ function HomePage({ users, loading, error, setUsers }) {
       isLocal: true,
     };
 
-    setUsers((prev) => [newUser, ...prev]);
+    dispatch(addUser(newUser));
     resetForm();
   }
 
@@ -119,7 +136,7 @@ function HomePage({ users, loading, error, setUsers }) {
     const confirmed = window.confirm(`Delete user "${user.name}"?`);
     if (!confirmed) return;
 
-    setUsers((prev) => prev.filter((u) => String(u.id) !== String(user.id)));
+    dispatch(deleteUser(user.id));
 
     if (String(editingUserId) === String(user.id)) {
       resetForm();

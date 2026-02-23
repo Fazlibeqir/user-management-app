@@ -1,8 +1,26 @@
 import { Link, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-function UserDetailsPage({ users }) {
+function UserDetailsPage() {
     const { id } = useParams();
+    const users = useSelector((state) => state.users.items);
+    const loading = useSelector((state) => state.users.loading);
+
     const user = users.find(user => String(user.id) === String(id));
+
+    if (loading) {
+        return (
+          <main className="container py-4">
+            <div className="mx-auto" style={{ maxWidth: "900px" }}>
+              <Link to="/" className="btn btn-outline-secondary btn-sm mb-3">
+               Back to users
+              </Link>
+              <p className="text-muted">Loading user details...</p>
+            </div>
+          </main>
+        );
+      }
+
 
     if (!user) {
         return (
